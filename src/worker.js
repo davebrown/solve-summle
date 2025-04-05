@@ -11,12 +11,11 @@ let inputs = [];
 onmessage = function(event) {
   target = event.data.target;
   inputs = event.data.inputs;
-  //const result = event.data * 2; // Example computation
-  console.log("worker invoked: target=" + target + " inputs=" + inputs);
+  //console.log("worker invoked: target=" + target + " inputs=" + inputs);
   solve(target, inputs, []);
-  var returnValue = "DID NOT SOLVE";
+  var returnValue = ["DID NOT SOLVE"];
   if (bestSolution) {
-    returnValue = bestSolution.join(" | ");
+    returnValue = bestSolution;
   }
   postMessage(returnValue);
 };

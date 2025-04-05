@@ -13,7 +13,8 @@ class App extends React.Component {
     this.state = {
       target: '',
       inputs: [],
-      solution:  "NA",
+      numbersInput: "", // Raw input string for the numbers field
+      solution: null,
       valid: false
     };
     myWorker.onmessage = function(event) {
@@ -23,7 +24,7 @@ class App extends React.Component {
 
   setResult(result) {
     var { target, inputs } = this.state;
-    console.log("setResult(" + result + ")");
+    //console.log("setResult(" + result + ")");
     this.setState({
       target: target,
       inputs: inputs,
@@ -32,43 +33,52 @@ class App extends React.Component {
     //myWorker.terminate();
   }
   runSolve() {
-    console.log("solve clicked: target=" + this.state.target + ", inputs=" + this.state.inputs);
+    //console.log("solve clicked: target=" + this.state.target + ", inputs=" + this.state.inputs);
     myWorker.postMessage(this.state);
   }
 
   
   handleChange(event) {
-    var { target, inputs, solution } = this.state;
-    const id = event.target.id;
-    console.log("handleChange: " + id + "->'" + event.target.value + '\'');
+    const { id, value } = event.target;
+    let { target, inputs, solution } = this.state;
+
     if (id === "target") {
-      var value = parseInt(event.target.value);
-      if (isNaN(value)) {
-        value = '';
-      }
-      target = value;
+      const parsedValue = parseInt(value);
+      target = isNaN(parsedValue) ? '' : parsedValue;
     } else if (id === "numbers") {
-      inputs = event.target.value.split(/[\s,]+/).filter(Boolean).map(Number);
-      console.log('inputs changed ' + inputs);
+      // Update the raw input string
+      this.setState({ numbersInput: value });
+
+      // Process the input string into an array of numbers
+      inputs = value.split(/[\s,]+/).filter(Boolean).map(Number);
     }
+
     this.setState({
-      target: target,
-      inputs: inputs,
-      solution: solution
+      target,
+      inputs,
+      solution
     });
   }
 
   render() {
-    const { target, inputs, solution } = this.state;
+    const { target, inputs, solution, numbersInput } = this.state;
     const valid = Number.isInteger(target) && inputs.length === 6 && inputs.every(Number.isInteger);
+
     return (
       <div className="App">
         <header className="App-header">
-          target: <input id="target" value={isNaN(target) ? '' : target} onChange={this.handleChange}/>
-          numbers: <input id="numbers" onChange={this.handleChange}/>
+          target: <input id="target" value={isNaN(target) ? '' : target} onChange={this.handleChange} />
+          numbers: <input id="numbers" value={numbersInput} onChange={this.handleChange} />
           <button id="solve" onClick={this.runSolve} disabled={!valid}>Solve</button>
-          Target: {target}<br/> Inputs: {inputs.join(",")}<br/>
-      Solution: {solution}
+          Target: {target}<br /> Inputs: {inputs.join(",")}<br />
+          {solution && (
+            <div className="solution-container">
+              Solution:
+              {solution.map((line, index) => (
+                <div key={index}>{line}</div>
+              ))}
+            </div>
+          )}
         </header>
       </div>
     );
